@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Smiley Bounce — Prototype 16</title>
+<style>
+:root{color-scheme:light;font-family:system-ui,-apple-system,Segoe UI,sans-serif}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#7fc4ff;touch-action:none;overscroll-behavior:none}canvas{display:block;width:100%;height:100%;touch-action:none}button{cursor:pointer;touch-action:manipulation;font:700 15px system-ui;border:1px solid #8ec8f6;border-radius:14px;background:linear-gradient(#eaf7ff,#c9e6fa);color:#174873;padding:12px 15px;box-shadow:0 6px 18px #77b2df33}button:focus-visible{outline:2px solid #fff;outline-offset:3px}button.chosen{background:linear-gradient(#73c9ff,#44aef5);color:#fff;border-color:#49a8ea;box-shadow:0 10px 22px #3aa8f544}.hud{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px;pointer-events:none}.hud>*{pointer-events:auto}.hud button{font-size:13px;padding:9px 12px}.stats{font-size:15px;line-height:1.3;background:#ffffffea;border:1px solid #b5ddfa;border-radius:999px;padding:10px 16px;color:#226096;text-align:center;white-space:nowrap;box-shadow:0 8px 22px #6bb0dc2b}.overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(#4b96cf66,#a8dafa9e);backdrop-filter:blur(3px);padding:18px;z-index:3}.overlay.hidden{display:none}.panel{width:min(430px,100%);max-height:94dvh;overflow:auto;background:linear-gradient(#e3f3ff,#bfdef5);border:1px solid #68a6d5;border-radius:24px;padding:26px 23px;color:#183e66;box-shadow:0 25px 75px #4f8cbc33;text-align:center}.panel h1{font-size:clamp(25px,6vw,34px);margin:0 0 5px;color:#1d5d93}.panel p{font-size:13px;line-height:1.4;color:#315c7d;margin:7px 0 10px}.panel .label{text-align:left;font-size:12px;font-weight:800;color:#3f6c90;letter-spacing:.08em;text-transform:uppercase;margin:10px 0 6px}.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}.choices button{min-height:57px}.primary{width:100%;margin-top:14px;border:none;background:linear-gradient(#ffd96b,#ffbf4b);color:#5f4612;font-size:18px;padding:15px;box-shadow:0 12px 26px #ffca5847}.leaderboard{margin-top:13px;padding:10px 13px 8px;background:#d5eaf9;border:1px solid #89b9db;border-radius:13px;text-align:left;color:#1b4a71}.leaderboard-title{font-size:13px;font-weight:800;margin-bottom:5px}.records{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}.records th{font-size:11px;color:#4b7392;font-weight:700}.records th,.records td{padding:4px 2px;border-bottom:1px solid #a6cee6;text-align:left}.records td:last-child,.records th:last-child{text-align:right;font-weight:800}.records tr:last-child td{border-bottom:0}.records .empty{text-align:center!important;color:#5b7f9a;font-weight:400!important}.footnote{font-size:12px!important;margin-bottom:0!important}.countdown{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:2;pointer-events:none;background:#b4ddff55}.countdown.visible{display:flex}.countdown span{font-size:clamp(90px,30vw,180px);font-weight:900;color:#fffdf4;text-shadow:0 4px 18px #4a8fc2,0 0 30px #ffffff}.hint{position:fixed;bottom:max(10px,env(safe-area-inset-bottom));left:0;right:0;text-align:center;font-size:12px;color:#5f88a9;pointer-events:none;text-shadow:0 1px 0 #ffffff}.hidden{display:none!important}@media(max-height:680px){.panel{padding:16px 20px}.panel p{margin:5px 0 9px}.panel .label{margin:9px 0 5px}.choices button{min-height:45px}.primary{margin-top:14px}}
+.credit{margin:12px 0 0!important;font-size:11px!important;color:#6f91b2!important;letter-spacing:.02em}</style></head><body>
+<canvas id="game" aria-label="Smiley Bounce game"></canvas>
+<div class="hud"><button id="menuBtn">☰ Menu</button><div class="stats">Target hits: <b id="score">0</b></div></div>
+<div class="overlay" id="overlay"><div class="panel"><h1 id="heading">☁️ Smiley Bounce</h1><p id="description">Keep at least one smiley above the open bottom. Hit the red obstacle to create more shapes when Multiball is enabled. Drag the handle to aim the paddle and keep the sky full of smiles!</p><div id="settings"><div class="label">Game mode</div><div class="choices"><button data-mode="gravity" class="chosen">🌎 Gravity<br><small>Impact power</small></button><button data-mode="space">🚀 No gravity<br><small>Gradual acceleration</small></button></div><div class="label">Extra balls</div><div class="choices"><button data-multiball="off" class="chosen">Off · Classic</button><button data-multiball="on">On · Multiball</button></div><section class="leaderboard" aria-label="Local high scores"><div class="leaderboard-title" id="leaderboardTitle">🏆 Top 3 · Gravity · Classic</div><table class="records"><thead><tr><th>#</th><th>Date / Time</th><th>Hits</th></tr></thead><tbody id="leaderboardRows"><tr><td colspan="3" class="empty">No results yet</td></tr></tbody></table></section></div><button id="start" class="primary">Start game</button><p id="footnote" class="footnote">3 · 2 · 1 countdown before every round. Sky theme preview selected — drag the handle below the 60° sector paddle.</p><p class="credit">Created by Tero Mäkäläinen</p></div></div>
+<div class="countdown" id="countdown"><span id="countValue">3</span></div><div class="hint" id="hint">Drag the handle below the sector paddle</div>
+<script>
+(()=>{'use strict';
+const canvas=document.querySelector('#game'),ctx=canvas.getContext('2d'),overlay=document.querySelector('#overlay'),countdownEl=document.querySelector('#countdown'),countValue=document.querySelector('#countValue'),hudScore=document.querySelector('#score');
+const STEP=1/120,BORDER=6;
+let W=0,H=0,dpr=1,previousFrame=0,acc=0,phase='menu',mode='gravity',multiball=false,score=0,elapsed=0,countStart=0,activePointer=null,roundStarted=false;
+let ball={x:0,y:0,vx:0,vy:0,r:17,angle:0,spin:0,hurt:0,spawnLock:0};let balls=[ball];
+const obstacle={x:0,y:0,r:27,angry:0};
+const controller={x:0,y:0,r:30,vx:0,vy:0};let target={x:0,y:0};const pressed=new Set();
+const $=s=>document.querySelector(s),clamp=(x,a,b)=>Math.min(b,Math.max(a,x)),zoneTop=()=>H*.75,handleGap=()=>controller.r*2.48+19;
+function constrained(x,y){let halfW=controller.r*1.18;let minY=zoneTop()-handleGap(),maxY=H-handleGap()-15;return {x:clamp(x,BORDER+halfW+3,W-BORDER-halfW-3),y:clamp(y,minY,Math.max(minY,maxY))};}
+function resize(){let oldW=W,oldH=H;W=Math.max(1,document.documentElement.clientWidth||innerWidth);H=Math.max(1,document.documentElement.clientHeight||innerHeight);dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0);controller.r=clamp(Math.min(W,H)*.047,22,32);const radius=clamp(Math.min(W,H)*.023,12,17)*1.2*1.25;for(const b of balls)b.r=radius;obstacle.x=W/2;obstacle.y=zoneTop()*.375;obstacle.r=clamp(Math.min(W,H)*.052,23,34);if(oldW){for(const b of balls){b.x*=W/oldW;b.y*=H/oldH;}controller.x*=W/oldW;controller.y*=H/oldH;target.x*=W/oldW;target.y*=H/oldH;}else{controller.x=W/2;controller.y=H*.83;target={x:controller.x,y:controller.y};}Object.assign(controller,constrained(controller.x,controller.y));target=constrained(target.x,target.y);if(!oldW)resetPositions();}
+function resetPositions(){balls=[ball];score=0;elapsed=0;acc=0;ball.x=obstacle.x;ball.y=obstacle.y;ball.vx=0;ball.vy=0;ball.launchClear=true;ball.angle=0;ball.spin=0;ball.hurt=0;ball.spawnLock=0;obstacle.angry=0;controller.x=W/2;controller.y=constrained(W/2,H*.81).y;controller.vx=0;controller.vy=0;target={x:controller.x,y:controller.y};updateHud();}
+function launchFirstBall(){
+ // The obstacle launches the first object toward the ceiling, to either side.
+ // It may not strike this obstacle again until it has passed below it.
+ const direction=Math.random()<.5?-1:1;
+ const angle=(35+Math.random()*20)*Math.PI/180;
+ const speed=mode==='gravity'?270:235;
+ ball.x=obstacle.x+direction*(obstacle.r+ball.r+2)*Math.sin(angle);
+ ball.y=obstacle.y-(obstacle.r+ball.r+2)*Math.cos(angle);
+ ball.vx=direction*Math.sin(angle)*speed;
+ ball.vy=-Math.cos(angle)*speed;
+ ball.spin=direction*(2+Math.random()*3);
+ ball.launchClear=true;
+ roundStarted=true;obstacle.angry=1;
+}
+const BOARD_KEY='smiley-bounce-scores-v1';
+function keyForMode(){return mode+'-'+(multiball?'multi':'classic');}
+function loadScores(){try{const obj=JSON.parse(localStorage.getItem(BOARD_KEY)||'{}');return obj&&typeof obj==='object'&&!Array.isArray(obj)?obj:{};}catch(e){return {};}}
+function renderLeaderboard(){const entries=(loadScores()[keyForMode()]||[]).slice(0,3);$('#leaderboardTitle').textContent='🏆 Top 3 · '+(mode==='gravity'?'Gravity':'No gravity')+' · '+(multiball?'Multiball':'Classic');const body=$('#leaderboardRows');body.replaceChildren();if(!entries.length){const row=body.insertRow(),cell=row.insertCell();cell.colSpan=3;cell.className='empty';cell.textContent='No results yet';return;}for(let i=0;i<entries.length;i++){const e=entries[i],date=new Date(e.at),valid=!Number.isNaN(date.valueOf()),row=body.insertRow();for(const value of [String(i+1),valid?date.toLocaleDateString()+'  '+date.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'—',String(e.hits)])row.insertCell().textContent=value;}}
+function saveResult(){if(!roundStarted)return;roundStarted=false;try{const boards=loadScores(),key=keyForMode(),entries=Array.isArray(boards[key])?boards[key]:[];entries.push({hits:score,at:new Date().toISOString()});entries.sort((a,b)=>b.hits-a.hits||Date.parse(a.at)-Date.parse(b.at));boards[key]=entries.slice(0,3);localStorage.setItem(BOARD_KEY,JSON.stringify(boards));}catch(e){/* Safari private mode or restricted storage: scores remain playable */}}
+function updateHud(){hudScore.textContent=score;}
+function showMenu(lost=false){if(lost)saveResult();phase='menu';countdownEl.classList.remove('visible');overlay.classList.remove('hidden');$('#settings').classList.remove('hidden');$('#heading').textContent=lost?'😵 Ball lost!':'☁️ Smiley Bounce';$('#description').textContent=lost?`You scored ${score} red-target hit${score===1?'':'s'}. Choose a mode and try again.`:'Keep at least one smiley above the open bottom. Hit the red obstacle to create more shapes when Multiball is enabled. Drag the handle to aim the paddle and keep the sky full of smiles!';$('#start').textContent=lost?'Play again':'Start game';renderLeaderboard();}
+function start(){resetPositions();roundStarted=false;phase='countdown';overlay.classList.add('hidden');countdownEl.classList.add('visible');countStart=performance.now();countValue.textContent='3';}
+for(const b of document.querySelectorAll('[data-mode]'))b.addEventListener('click',()=>{mode=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(x=>x.classList.toggle('chosen',x===b));renderLeaderboard();});
+for(const b of document.querySelectorAll('[data-multiball]'))b.addEventListener('click',()=>{multiball=b.dataset.multiball==='on';document.querySelectorAll('[data-multiball]').forEach(x=>x.classList.toggle('chosen',x===b));renderLeaderboard();});
+$('#start').addEventListener('click',start);$('#menuBtn').addEventListener('click',()=>showMenu(false));
+// Finger stays on the distinct handle, not over the rebound surface.
+function pointerTarget(e){let rect=canvas.getBoundingClientRect();return constrained(e.clientX-rect.left,e.clientY-rect.top-handleGap());}
+canvas.addEventListener('pointerdown',e=>{if(phase==='menu'||activePointer!==null)return;activePointer=e.pointerId;try{canvas.setPointerCapture(e.pointerId);}catch(_){}target=pointerTarget(e);});
+canvas.addEventListener('pointermove',e=>{if(e.pointerId===activePointer || (e.pointerType==='mouse'&&e.buttons===0&&activePointer===null&&phase==='playing'))target=pointerTarget(e);});
+for(const type of ['pointerup','pointercancel'])canvas.addEventListener(type,e=>{if(e.pointerId===activePointer){activePointer=null;try{if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId);}catch(_){}}});
+addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key))e.preventDefault();pressed.add(e.key.toLowerCase());if(e.key==='Enter'&&phase==='menu')start();if(e.key==='Escape'&&phase!=='menu')showMenu(false);});addEventListener('keyup',e=>pressed.delete(e.key.toLowerCase()));
+// A wider 60-degree sector, with a 18% wider contact arc.
+function paddleVertices(){const r=controller.r*1.18,half=Math.PI/6,R=r/Math.sin(half),cy=controller.y+R*Math.cos(half),v=[];for(let i=0;i<=18;i++){const a=-Math.PI/2-half+i*(2*half/18);v.push({x:controller.x+R*Math.cos(a),y:cy+R*Math.sin(a)});}v.push({x:controller.x,y:cy});return v;}
+function nearestPoint(x,y,a,b){const dx=b.x-a.x,dy=b.y-a.y,t=clamp(((x-a.x)*dx+(y-a.y)*dy)/(dx*dx+dy*dy||1),0,1);return {x:a.x+dx*t,y:a.y+dy*t};}
+function insidePoly(p,vs){let sign=0;for(let i=0;i<vs.length;i++){const a=vs[i],b=vs[(i+1)%vs.length],cross=(b.x-a.x)*(p.y-a.y)-(b.y-a.y)*(p.x-a.x);if(Math.abs(cross)>1e-7){const v=Math.sign(cross);if(sign&&sign!==v)return false;sign=v;}}return true;}
+function collision(){const paddle=paddleVertices();let best=Infinity,q=null;for(let i=0;i<paddle.length;i++){let v=nearestPoint(ball.x,ball.y,paddle[i],paddle[(i+1)%paddle.length]);let d=(ball.x-v.x)**2+(ball.y-v.y)**2;if(d<best){best=d;q=v;}}const d=Math.sqrt(best),inside=insidePoly(ball,paddle);if(!inside&&d>=ball.r)return null;let nx=(ball.x-q.x)/(d||1),ny=(ball.y-q.y)/(d||1);if(inside){nx=ball.x-controller.x;ny=ball.y-controller.y-controller.r;const len=Math.hypot(nx,ny)||1;nx/=len;ny/=len;}else if(d<.00001){nx=0;ny=-1;}return {nx,ny,penetration:inside?ball.r+d:ball.r-d};}
+function obstacleCollision(){const dx=ball.x-obstacle.x,dy=ball.y-obstacle.y,d=Math.hypot(dx,dy),r=ball.r+obstacle.r;if(d>=r)return null;return {nx:d>1e-6?dx/d:0,ny:d>1e-6?dy/d:-1,penetration:r-d};}
+function bounceObstacle(pending){
+ const c=obstacleCollision();if(!c)return;
+ ball.x+=c.nx*(c.penetration+.8);ball.y+=c.ny*(c.penetration+.8);
+ const dot=ball.vx*c.nx+ball.vy*c.ny;
+ if(dot>=0)return;
+ const before=Math.hypot(ball.vx,ball.vy);
+ const restitution=mode==='gravity'?.92:1;
+ ball.vx-=(1+restitution)*dot*c.nx;ball.vy-=(1+restitution)*dot*c.ny;
+ if(mode==='space'){
+  const after=Math.hypot(ball.vx,ball.vy)||1;
+  ball.vx*=before/after;ball.vy*=before/after;
+ }
+ ball.spin=clamp(ball.spin+(ball.vx*c.ny-ball.vy*c.nx)*.012,-15,15);
+ obstacle.angry=1;score++;
+ if(multiball&&ball.spawnLock<=0&&balls.length+pending.length<24){
+  // Launch from the far side of the obstacle, away from the incoming contact.
+  const dirx=-c.nx,diry=-c.ny,dl=Math.hypot(dirx,diry)||1;
+  const nx=dirx/dl,ny=diry/dl;
+  const speed=Math.max(165,Math.hypot(ball.vx,ball.vy));
+  const r=ball.r,dist=obstacle.r+r+5;
+  const spawned={x:obstacle.x+nx*dist,y:obstacle.y+ny*dist,vx:nx*speed,vy:ny*speed,r,angle:ball.angle+Math.PI,spin:-ball.spin+2,hurt:.5,spawnLock:.4};
+  pending.push(spawned);ball.spawnLock=.33;
+ }
+}
+function drawObstacle(){
+ const {x,y,r}=obstacle,angry=obstacle.angry>0;
+ ctx.save();ctx.translate(x,y);ctx.shadowColor='#ff3d54';ctx.shadowBlur=angry?22:13;
+ ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fillStyle=angry?'#f3394b':'#f05a64';ctx.fill();ctx.lineWidth=3;ctx.strokeStyle='#ffb3a7';ctx.stroke();ctx.shadowBlur=0;
+ ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#401423';ctx.fillStyle='#401423';
+ if(angry){
+  // Furiously slanted V-brows, squinting eyes, flared nostrils, and bared teeth.
+  ctx.strokeStyle='#270910';ctx.fillStyle='#270910';
+  ctx.lineWidth=Math.max(4,r*.17);
+  ctx.beginPath();ctx.moveTo(-r*.68,-r*.48);ctx.lineTo(-r*.13,-r*.19);ctx.moveTo(r*.68,-r*.48);ctx.lineTo(r*.13,-r*.19);ctx.stroke();
+  for(const side of [-1,1]){
+   ctx.beginPath();ctx.ellipse(side*r*.33,-r*.04,r*.16,r*.09,side*.28,0,Math.PI*2);ctx.fill();
+   ctx.beginPath();ctx.arc(side*r*.20,r*.21,r*.045,0,Math.PI*2);ctx.fill();
+  }
+  // Wide, jagged snarling mouth: white clenched teeth and a dark outline.
+  ctx.beginPath();ctx.moveTo(-r*.51,r*.39);ctx.lineTo(-r*.38,r*.19);ctx.lineTo(r*.38,r*.19);ctx.lineTo(r*.51,r*.39);ctx.lineTo(r*.34,r*.61);ctx.lineTo(-r*.34,r*.61);ctx.closePath();
+  ctx.fillStyle='#2e0711';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='#2e0711';ctx.stroke();
+  ctx.beginPath();ctx.moveTo(-r*.36,r*.28);ctx.lineTo(r*.36,r*.28);ctx.lineTo(r*.29,r*.45);ctx.lineTo(-r*.29,r*.45);ctx.closePath();ctx.fillStyle='#fff5e8';ctx.fill();
+  ctx.strokeStyle='#60121b';ctx.lineWidth=Math.max(1.2,r*.045);
+  for(const f of [-.15,0,.15]){ctx.beginPath();ctx.moveTo(r*f,r*.29);ctx.lineTo(r*f,r*.44);ctx.stroke();}
+ }else{
+  for(const side of [-1,1]){ctx.beginPath();ctx.arc(side*r*.33,-r*.19,r*.11,0,Math.PI*2);ctx.fill();}
+  ctx.lineWidth=Math.max(2.8,r*.1);ctx.beginPath();ctx.arc(0,r*.05,r*.45,.15*Math.PI,.85*Math.PI);ctx.stroke();
+ }
+ ctx.restore();
+}
+function ballBallCollisions(){
+ for(let i=0;i<balls.length;i++)for(let j=i+1;j<balls.length;j++){
+  const a=balls[i],b=balls[j];const dx=b.x-a.x,dy=b.y-a.y;
+  const minDist=a.r+b.r;let distance=Math.hypot(dx,dy);
+  if(distance>=minDist)continue;
+  if(distance<.0001)distance=.0001;
+  const nx=dx/distance,ny=dy/distance,overlap=minDist-distance;
+  a.x-=nx*overlap*.5;a.y-=ny*overlap*.5;
+  b.x+=nx*overlap*.5;b.y+=ny*overlap*.5;
+  const relative=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;
+  if(relative>=0)continue;
+  const restitution=mode==='gravity'?.91:1;
+  const impulse=-(1+restitution)*relative*.5;
+  a.vx-=impulse*nx;a.vy-=impulse*ny;b.vx+=impulse*nx;b.vy+=impulse*ny;
+  a.spin-=relative*.016;b.spin+=relative*.016;
+  a.hurt=Math.max(a.hurt,.5);b.hurt=Math.max(b.hurt,.5);
+ }
+}
+function update(dt){
+ if(phase!=='playing')return;
+ elapsed+=dt;obstacle.angry=Math.max(0,obstacle.angry-dt);
+ if(pressed.has('arrowleft')||pressed.has('a'))target.x-=530*dt;
+ if(pressed.has('arrowright')||pressed.has('d'))target.x+=530*dt;
+ if(pressed.has('arrowup')||pressed.has('w'))target.y-=530*dt;
+ if(pressed.has('arrowdown')||pressed.has('s'))target.y+=530*dt;
+ target=constrained(target.x,target.y);
+ const px=controller.x,py=controller.y,follow=clamp(dt*34,0,1);
+ controller.x+=(target.x-controller.x)*follow;controller.y+=(target.y-controller.y)*follow;
+ controller.vx=(controller.x-px)/dt;controller.vy=(controller.y-py)/dt;
+ const pending=[];
+ for(const b of balls){
+  ball=b;
+  ball.hurt=Math.max(0,ball.hurt-dt);ball.spawnLock=Math.max(0,ball.spawnLock-dt);if(ball.launchClear && ball.y-ball.r>obstacle.y+obstacle.r+6)ball.launchClear=false;
+  if(mode==='gravity')ball.vy+=490*dt;
+  else{let s=Math.hypot(ball.vx,ball.vy),next=Math.min(1050,s+30*dt+Math.min(elapsed,90)*.55*dt);if(s>0){ball.vx*=next/s;ball.vy*=next/s;}}
+  ball.x+=ball.vx*dt;ball.y+=ball.vy*dt;ball.angle+=ball.spin*dt;ball.spin*=Math.exp(-.55*dt);
+  if(ball.x-ball.r<BORDER){ball.x=BORDER+ball.r;ball.vx=Math.abs(ball.vx)*.94;ball.spin+=1.1;}
+  if(ball.x+ball.r>W-BORDER){ball.x=W-BORDER-ball.r;ball.vx=-Math.abs(ball.vx)*.94;ball.spin-=1.1;}
+  if(ball.y-ball.r<BORDER){ball.y=BORDER+ball.r;ball.vy=Math.abs(ball.vy)*.94;ball.spin+=.8;}
+  if(!ball.launchClear)bounceObstacle(pending);
+  const c=collision();if(c){let {nx,ny,penetration}=c,rvx=ball.vx-controller.vx,rvy=ball.vy-controller.vy,approach=rvx*nx+rvy*ny;
+   if(approach<0){let before=Math.hypot(ball.vx,ball.vy);let ox=rvx-2*approach*nx+controller.vx,oy=rvy-2*approach*ny+controller.vy;let outLen=Math.hypot(ox,oy)||1,speed;
+    if(mode==='gravity'){const base=Math.sqrt(2*490*H*.45),upward=clamp(-controller.vy,0,850);speed=base+upward*.45;
+     if(ny<-.15){oy=Math.min(oy,-Math.abs(oy)*.65-50);outLen=Math.hypot(ox,oy)||1;}}
+    else speed=before;
+    ball.vx=ox/outLen*speed;ball.vy=oy/outLen*speed;
+    ball.spin=clamp((ball.vx-controller.vx)*.016+((ball.x-controller.x)/controller.r)*4,-16,16);
+    ball.hurt=.5;
+   }
+   ball.x+=nx*(penetration+.7);ball.y+=ny*(penetration+.7);
+  }
+ }
+ balls.push(...pending);
+ ballBallCollisions();
+ balls=balls.filter(b=>b.y-b.r<=H);
+ if(balls.length===0){showMenu(true);return;}
+ ball=balls[0];
+}
+function cloud(x,y,s,a=.85){ctx.save();ctx.globalAlpha=a;ctx.fillStyle='#ffffff';for(const [dx,dy,r] of [[-32,-3,26],[0,-16,33],[35,-2,28],[-2,8,30]]){ctx.beginPath();ctx.arc(x+dx*s,y+dy*s,r*s,0,Math.PI*2);ctx.fill();}ctx.restore();}
+function drawController(){ctx.save();ctx.lineJoin='round';ctx.lineCap='round';const x=controller.x,handleY=controller.y+handleGap(),verts=paddleVertices(),tip=verts[verts.length-1];ctx.strokeStyle='#77aace';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(tip.x,tip.y-2);ctx.lineTo(x,handleY);ctx.stroke();ctx.strokeStyle='#ffffff';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(x,handleY,13,0,Math.PI*2);ctx.fillStyle='#318fd0';ctx.fill();ctx.stroke();ctx.beginPath();ctx.arc(x,handleY,5,0,Math.PI*2);ctx.fillStyle='#e5faff';ctx.fill();ctx.shadowColor='#90dfff';ctx.shadowBlur=13;ctx.fillStyle='rgba(37,150,232,.92)';ctx.strokeStyle='#f6ffff';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(verts[0].x,verts[0].y);for(const v of verts.slice(1))ctx.lineTo(v.x,v.y);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();}
+function drawBall(){ctx.save();ctx.translate(ball.x,ball.y);ctx.rotate(ball.angle);const r=ball.r,hurt=ball.hurt>0;ctx.shadowColor='#ffca42';ctx.shadowBlur=18;ctx.fillStyle='#ffdd45';ctx.strokeStyle='#fff6bb';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.shadowBlur=0;const ey=-r*.23,ex=r*.36,eyeR=r*.115;ctx.strokeStyle='#202536';ctx.fillStyle='#202536';ctx.lineWidth=Math.max(2.5,r*.105);ctx.lineCap='round';ctx.lineJoin='round';if(hurt){for(const sign of [-1,1]){const xx=sign*ex,z=eyeR*1.1;ctx.beginPath();ctx.moveTo(xx-z,ey-z);ctx.lineTo(xx+z,ey+z);ctx.moveTo(xx+z,ey-z);ctx.lineTo(xx-z,ey+z);ctx.stroke();}ctx.fillStyle='#9c2344';ctx.strokeStyle='#202536';ctx.lineWidth=Math.max(1.6,r*.07);ctx.beginPath();ctx.ellipse(0,r*.34,r*.19,r*.19,0,0,Math.PI*2);ctx.fill();ctx.stroke();}else{for(const sign of [-1,1]){ctx.beginPath();ctx.arc(sign*ex,ey,eyeR,0,Math.PI*2);ctx.fill();}ctx.strokeStyle='#202536';ctx.lineWidth=Math.max(2.5,r*.105);ctx.beginPath();ctx.arc(0,r*.025,r*.49,.15*Math.PI,.85*Math.PI);ctx.stroke();}ctx.restore();}
+function draw(){
+ const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#48aef7');sky.addColorStop(.50,'#91d5ff');sky.addColorStop(1,'#d7f3ff');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+ const sun=ctx.createRadialGradient(W*.86,H*.115,5,W*.86,H*.115,Math.max(100,W*.34));sun.addColorStop(0,'rgba(255,251,195,.98)');sun.addColorStop(.25,'rgba(255,246,173,.77)');sun.addColorStop(1,'rgba(255,249,198,0)');ctx.fillStyle=sun;ctx.fillRect(0,0,W,H*.43);
+ cloud(W*.17,H*.14,1.15,.84);cloud(W*.80,H*.24,1.25,.84);cloud(W*.2,H*.37,.9,.62);cloud(W*.82,H*.47,1.1,.7);cloud(W*.43,H*.57,1.15,.48);
+ ctx.fillStyle='#aacfea';ctx.beginPath();ctx.moveTo(0,H*.72);ctx.quadraticCurveTo(W*.17,H*.63,W*.35,H*.71);ctx.quadraticCurveTo(W*.51,H*.79,W*.65,H*.69);ctx.quadraticCurveTo(W*.83,H*.61,W,H*.73);ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.fill();
+ ctx.fillStyle='#85bbdc';ctx.beginPath();ctx.moveTo(0,H*.79);ctx.quadraticCurveTo(W*.24,H*.7,W*.45,H*.8);ctx.quadraticCurveTo(W*.7,H*.87,W,H*.75);ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.fill();
+ const fade=ctx.createLinearGradient(0,zoneTop(),0,H);fade.addColorStop(0,'rgba(233,247,255,.1)');fade.addColorStop(.26,'rgba(221,242,249,.52)');fade.addColorStop(1,'rgba(120,187,132,.78)');ctx.fillStyle=fade;ctx.fillRect(0,zoneTop(),W,H-zoneTop());
+ ctx.fillStyle='rgba(133,196,116,.73)';ctx.beginPath();ctx.moveTo(0,H);ctx.lineTo(0,H*.91);ctx.quadraticCurveTo(W*.2,H*.85,W*.4,H*.92);ctx.quadraticCurveTo(W*.65,H*.99,W,H*.88);ctx.lineTo(W,H);ctx.fill();
+ ctx.save();ctx.strokeStyle='rgba(255,255,255,.68)';ctx.lineWidth=1.4;ctx.setLineDash([7,9]);ctx.beginPath();ctx.moveTo(BORDER,zoneTop());ctx.lineTo(W-BORDER,zoneTop());ctx.stroke();ctx.restore();
+ ctx.strokeStyle='#e5f6ff';ctx.lineWidth=BORDER;ctx.beginPath();ctx.moveTo(BORDER/2,H);ctx.lineTo(BORDER/2,BORDER/2);ctx.lineTo(W-BORDER/2,BORDER/2);ctx.lineTo(W-BORDER/2,H);ctx.stroke();
+ drawController();drawObstacle();if(phase==='playing'){for(const b of balls){ball=b;drawBall();}}ball=balls[0]||ball;
+}
+function frame(t){if(!previousFrame)previousFrame=t;let delta=Math.min((t-previousFrame)/1000,.05);previousFrame=t;if(phase==='countdown'){let s=(t-countStart)/1000;if(s>=3){launchFirstBall();phase='playing';countdownEl.classList.remove('visible');acc=0;}else countValue.textContent=String(3-Math.floor(s));}if(phase==='playing'){acc+=delta;while(acc>=STEP){update(STEP);acc-=STEP;if(phase!=='playing'){acc=0;break;}}updateHud();}draw();requestAnimationFrame(frame);}
+document.addEventListener('visibilitychange',()=>{previousFrame=0;acc=0;if(document.hidden&&phase==='countdown')countStart=performance.now();});addEventListener('resize',()=>{resize();previousFrame=0;acc=0;});if(window.visualViewport)visualViewport.addEventListener('resize',()=>{resize();previousFrame=0;acc=0;});resize();showMenu();requestAnimationFrame(frame);
+})();
+</script></body></html>
